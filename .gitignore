@@ -1,0 +1,6 @@
+*.png
+*.jpg
+
+*.pyc
+
+.ropeproject/
