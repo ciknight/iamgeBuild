@@ -8,29 +8,47 @@ from util import join_path
 
 
 class Reader(object):
+    """Usage
+    >>> r = Reader()
+    >>> r.header = 'relative_path'
+    >>> r.footer = 'message'
+
+    Image.size = (width, height)
+    """
 
     DEFAULT_IMAGE_MODE = 'RGB'
     DEFAULT_WIDTH = 750
+    DEFAULT_FORMAT = 'png'
+
+    WHITE = 0xffffff
+    BLACK = 0x000000
 
     def __init__(self):
         super(Reader, self).__init__()
 
     def combined(self, *args):
         if not args: raise ValueError(u'图片不能为空')
-        widths = []
-        new_height = 0
+
+        widths, new_height = [], 0
         for image in args:
-            if not image:
-                continue
+            if not image:continue
             new_height += image.size[1]
             widths.append(image.size[0])
+
         if len(set(widths)) != 1: raise ValueError(u'图片宽度不同')
+
         width = widths[0]
         if width != self.DEFAULT_WIDTH:
             sys.stdout.write(u'suggest width use {}px\n'.format(self.DEFAULT_WIDTH))
         size = (width, new_height)
-        im = Image.new(self.DEFAULT_IMAGE_MODE, size)
-        return im
+        combine_img = Image.new(self.DEFAULT_IMAGE_MODE, size, self.WHITE)
+        paste_height = 0
+        for _, image in enumerate(args):
+            combine_img.paste(image, (0, paste_height))
+            paste_height += image.size[1]
+        # TODO <ci_knight@msn.cn>> height over the max height
+
+        return combine_img
 
     @staticmethod
     def __reg_img(path):
@@ -59,7 +77,7 @@ class Reader(object):
     def footer(self, footer_text='', width=None, color=None):
         if not width: width= self.DEFAULT_WIDTH
         size = (width, 100)
-        if not color: color=(255,255,255)
+        if not color: color=self.BLACK
         self._footer = Image.new(self.DEFAULT_IMAGE_MODE, size, color)
         return self
 
