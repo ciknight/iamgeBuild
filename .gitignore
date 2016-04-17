@@ -1,5 +1,11 @@
 *.png
 *.jpg
+*.ttf
+*.ttc
+*.txt
+
+*.PNG
+*.JPEG
 
 *.pyc
 
