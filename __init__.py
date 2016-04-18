@@ -28,12 +28,16 @@ class Reader(object):
 
     RGB_WHITE = (255, 255, 255)
     RGB_BLACK = (0, 0, 0)
+    RGBA_OPACITY = (0, 0, 0, 0)
 
     def __init__(self, width=None, **kwargs):
         super(Reader, self).__init__()
         if not width: self.width = self.DEFAULT_WIDTH
         self.footer_height = 60
         self.text_background_color = kwargs.get('text_background_color', self.RGB_WHITE)
+        self.font_size = kwargs.get('font_size', self.RGB_WHITE)
+        self.font = kwargs.get('font', self.DEFAULT_FONT)
+        self.font_color = kwargs.get('font_color', self.RGB_BLACK)
 
     def __suggest_width(self, width):
         if width != self.DEFAULT_WIDTH:
@@ -53,7 +57,7 @@ class Reader(object):
         width = widths[0]
         self.__suggest_width(width)
         size = (width, new_height)
-        combine_img = Image.new(self.DEFAULT_IMAGE_MODE, size, self.WHITE)
+        combine_img = Image.new(self.OPACITY_IMAGE_MODE, size, self.RGBA_OPACITY)
 
         paste_height = 0
         for _, image in enumerate(args):
@@ -61,6 +65,10 @@ class Reader(object):
             paste_height += image.size[1]
         # TODO <ci_knight@msn.cn>> height over the max height
         return combine_img
+
+    @classmethod
+    def combine_img(cls, *args):
+        return cls.__combine_imgs(*args)
 
     def __text_to_png(self, text='', font_size=DEFAULT_FONT_SIZE,
                       font_path=DEFAULT_FONT, font_color=RGB_BLACK, background_color=RGB_WHITE):
@@ -135,6 +143,8 @@ class Reader(object):
     @footer.getter
     def footer(self):
         return self._footer
+
+    # TODO <ci_knight@msn.cn> title
 
     @staticmethod
     def __reg_img(path):
