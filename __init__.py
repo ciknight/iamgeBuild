@@ -4,7 +4,10 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
-from util import join_path
+from util import FILE_TYPE_PNG, FILE_TYPE_TTC, join_path
+
+
+
 
 
 class Reader(object):
@@ -19,12 +22,14 @@ class Reader(object):
     DEFAULT_IMAGE_MODE = 'RGB'
     OPACITY_IMAGE_MODE = 'RGBA'
     DEFAULT_WIDTH = 750  # default ios width
-    DEFAULT_FORMAT = 'PNG'
-    DEFAULT_FONT = join_path('font.ttc')
+    DEFAULT_FORMAT = FILE_TYPE_PNG
+    DEFAULT_FONT = join_path('font.{}'.format(FILE_TYPE_TTC))
     DEFAULT_FONT_SIZE = 18
 
-    WHITE = 0xffffff
-    BLACK = 0x000000
+    MARGIN_LEFT = DEFAULT_FONT_SIZE * 1
+    MARGIN_RIGHT = DEFAULT_FONT_SIZE * 2
+    MARGIN_TOP = 8
+    MARGIN_BOTTOM = 8
 
     RGB_WHITE = (255, 255, 255)
     RGB_BLACK = (0, 0, 0)
@@ -52,7 +57,7 @@ class Reader(object):
             new_height += image.size[1]
             widths.append(image.size[0])
 
-        if len(set(widths)) != 1: raise ValueError(u'图片宽度不同')
+        assert len(set(widths)) == 1, u'图片宽度不同'
 
         width = widths[0]
         self.__suggest_width(width)
@@ -76,22 +81,24 @@ class Reader(object):
 
         font = ImageFont.truetype(font_path, font_size)
         width, height = font.getsize(text)
-        if width > self.width: width = self.width
-
+        #if width > self.width: width = self.width
+        width = self.width
+        height += self.MARGIN_TOP
         sys.stdout.write('text_to_png establish width:{}px,height:{}px\n'.format(width, height))
         image = Image.new(self.DEFAULT_IMAGE_MODE, (width, height), background_color)
         draw = ImageDraw.Draw(image)
-        draw.text((0, 0), text, font=font, fill=font_color)
+        draw.text((self.MARGIN_LEFT, self.MARGIN_TOP), text, font=font, fill=font_color)
         return image
 
     def __combine_text(self, text='', font_size=DEFAULT_FONT_SIZE,
                        font_path=DEFAULT_FONT, font_color=RGB_BLACK, background_color=RGB_WHITE):
         if not text: return None
+
         texts = text.split('\n')
-        margin = 50
-        word_count = (self.width - margin) / font_size
+        word_count = (self.width - self.MARGIN_LEFT - self.MARGIN_RIGHT) / font_size
+        print word_count,
         images = []
-        text_sections = [self.__chunks(t, word_count) for t in texts]
+        text_sections = [self.__chunks(t.strip(), word_count) for t in texts]
         for text_lines in text_sections:
             for t in text_lines:
                 image = self.__text_to_png(text=t,
@@ -137,7 +144,7 @@ class Reader(object):
     @footer.setter
     def footer(self, text=''):
         size = (self.width, self.footer_height)
-        self._footer = Image.new(self.DEFAULT_IMAGE_MODE, size, self.WHITE)
+        self._footer = Image.new(self.DEFAULT_IMAGE_MODE, size, self.RGB_WHITE)
         return self
 
     @footer.getter
@@ -174,7 +181,12 @@ if __name__ == '__main__':
     #r.header = 'source_1.png'
     #r.footer = ''
     #im = r.combined(r.header, r.footer)
-    text = u"hello world"
+    text = u"""
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    """
+    chinese_text = u"""
+    盼望着，盼望着，东风来了，春天的脚步近了。一切都像刚睡醒的样子，欣欣然张开了眼。山朗润起来了，水涨起来了，太阳的脸红起来了。小草偷偷地从土地里钻出来，嫩嫩的，绿绿的。园子里，田野里，瞧去，一大片一大片满是的。坐着，躺着，打两个滚，踢几脚球，赛几趟跑，捉几回迷藏。风轻俏俏的，草软绵绵的。
+    """
     r.text = text
     r.text.save('test.png')
 
