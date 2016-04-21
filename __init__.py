@@ -76,13 +76,13 @@ class Reader(object):
         return cls.__combine_imgs(*args)
 
     def __text_to_png(self, text='', font_size=DEFAULT_FONT_SIZE,
-                      font_path=DEFAULT_FONT, font_color=RGB_BLACK, background_color=RGB_WHITE):
+                      font_path=DEFAULT_FONT, font_color=RGB_BLACK,
+                      background_color=RGB_WHITE, is_header_width=True):
         if not isinstance(text, unicode): text = unicode(text, 'UTF-8')
 
         font = ImageFont.truetype(font_path, font_size)
         width, height = font.getsize(text)
-        #if width > self.width: width = self.width
-        width = self.width
+        if is_header_width: width = self.width
         height += self.MARGIN_TOP
         sys.stdout.write('text_to_png establish width:{}px,height:{}px\n'.format(width, height))
         image = Image.new(self.DEFAULT_IMAGE_MODE, (width, height), background_color)
@@ -174,13 +174,7 @@ class Blog(Reader):
 
 
 if __name__ == '__main__':
-    # file = join_path('source_1.png')
-    # im = Image.open(file)
-    # print im.format, im.size, im.mode
     r = Reader()
-    #r.header = 'source_1.png'
-    #r.footer = ''
-    #im = r.combined(r.header, r.footer)
     text = u"""
     Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     """
